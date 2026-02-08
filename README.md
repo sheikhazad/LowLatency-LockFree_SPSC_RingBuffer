@@ -1,6 +1,6 @@
 It's lock free Ultra Low-latency SPSC Ring (circular) buffer.
 
-This SPSC queue works beautifully because:
+This SPSC queue works super fast because:
 ------------------------------------------
 -Only the producer writes writeIndex
 -Only the consumer writes readIndex
