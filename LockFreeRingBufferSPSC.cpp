@@ -1,5 +1,5 @@
-// LockFreeRingBufferSPSCQueue.cpp
-#include "LockFreeRingBufferSPSCQueue.hpp"
+// LockFreeRingBufferSPSC.cpp
+#include "LockFreeRingBufferSPSC.hpp"
 #include<iostream>
 #include<thread>
 #include<vector>
@@ -11,9 +11,9 @@ static constexpr size_t NUM_ITEMS{1'000'000};
 
 int main(int argc, char* argv[]){
 
-    cout<< "Starting LockFreeRingBufferSPSCQueue test with " << NUM_ITEMS << " items..." << endl;
+    cout<< "Starting LockFreeRingBufferSPSC test with " << NUM_ITEMS << " items..." << endl;
 
-    LockFreeRingBufferSPSCQueue<size_t> rb(1024); // Capacity must be a power of 2
+    LockFreeRingBufferSPSC<size_t> rb(1024); // Capacity must be a power of 2
 
     std::atomic<bool> producerDone{false};
     std::atomic<bool>consumerDone{false};
