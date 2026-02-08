@@ -12,13 +12,21 @@ static constexpr size_t NUM_ITEMS{1'000'000};
 int main(int argc, char* argv[]){
 
     cout<< "Starting LockFreeRingBufferSPSC test with " << NUM_ITEMS << " items..." << endl;
-
-    LockFreeRingBufferSPSC<size_t> rb(1024); // Capacity must be a power of 2
-
+    
+    /*No need to align because:
+      -written once
+      -read rarely
+      -not part of the hot path
+      -not accessed concurrently in a tight loop by both threads
+      -The producer writes producerDone once at the end.
+      -The consumer reads it occasionally when the buffer is empty.
+      This is not a high‑frequency contention point.*/
     std::atomic<bool> producerDone{false};
     std::atomic<bool>consumerDone{false};
-    
+
+    LockFreeRingBufferSPSC<size_t> rb(1024); // Capacity must be a power of 2
     vector<size_t> consumedData_vec;
+    consumedData_vec.reserve(NUM_ITEMS);
 
     ///// Producer thread/////////
     std::thread producer([&]{
