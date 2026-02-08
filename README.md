@@ -1,5 +1,13 @@
 It's lock free Ultra Low-latency SPSC Ring (circular) buffer.
 
+This SPSC queue works beautifully because:
+------------------------------------------
+-Only the producer writes writeIndex
+-Only the consumer writes readIndex
+-No two threads ever modify the same variable
+-No CAS, no locks, no contention
+-This is why the memory ordering is simple and fast.
+
 A ring buffer is naturally FIFO(Queue), not LIFO(Stack)
 ------------------------------------------------------
 A ring buffer is defined by:
