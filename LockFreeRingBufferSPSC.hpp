@@ -1,4 +1,4 @@
-//LockFreeRingBufferSPSCQueue.hpp
+//LockFreeRingBufferSPSC.hpp
 
 #pragma once
 #include<atomic>
@@ -9,10 +9,10 @@
 using namespace std;
 
 template<typename T>
-class LockFreeRingBufferSPSCQueue
+class LockFreeRingBufferSPSC
 {
     public:
-        explicit LockFreeRingBufferSPSCQueue(size_t capacity):_capacity(capacity){
+        explicit LockFreeRingBufferSPSC(size_t capacity):_capacity(capacity){
 
                 // We require capacity to be a power of two so that:
                 //     (index & mask_) == (index % capacity)
@@ -24,14 +24,14 @@ class LockFreeRingBufferSPSCQueue
                 _buffer = new T[capacity];
             }
 
-        ~LockFreeRingBufferSPSCQueue(){
+        ~LockFreeRingBufferSPSC(){
             delete[] _buffer;
         }
 
-        LockFreeRingBufferSPSCQueue(const LockFreeRingBufferSPSCQueue&) = delete;
-        LockFreeRingBufferSPSCQueue& operator=(const LockFreeRingBufferSPSCQueue&) = delete;
-        LockFreeRingBufferSPSCQueue(LockFreeRingBufferSPSCQueue&&) = delete;
-        LockFreeRingBufferSPSCQueue& operator=( LockFreeRingBufferSPSCQueue&&) = delete;
+        LockFreeRingBufferSPSC(const LockFreeRingBufferSPSC&) = delete;
+        LockFreeRingBufferSPSC& operator=(const LockFreeRingBufferSPSC&) = delete;
+        LockFreeRingBufferSPSC(LockFreeRingBufferSPSC&&) = delete;
+        LockFreeRingBufferSPSC& operator=( LockFreeRingBufferSPSC&&) = delete;
 
         bool push(const T& data){
             // Relaxed is safe because ONLY the producer thread writes to writeIndex_.
