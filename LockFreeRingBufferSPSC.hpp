@@ -6,20 +6,25 @@
 #include<stdexcept> // for std::invalid_argument
 #include<cstddef> // for size_t
 #include<bit>  //For bit_ceil();
+#include <memory> //For unique_ptr
 
-using namespace std;
+//using namespace std; in a header is dangerous because it pollutes the namespace of every file that includes this header.
+//using namespace std; 
+//Also using for same reason above:
+//using std::atomic;
 
 template<typename T>
 class LockFreeRingBufferSPSC
 {
 
   private:
-    T* _buffer;
-    size_t _capacity;
-    size_t _mask;
+    //T* _buffer;
+    std::unique_ptr<T[]> _buffer;
+    std::size_t _capacity;
+    std::size_t _mask;
 
-    alignas(std::hardware_destructive_interference_size) atomic<size_t> _writeIndex{0};
-    alignas(std::hardware_destructive_interference_size) atomic<size_t> _readIndex{0};
+    alignas(std::hardware_destructive_interference_size) std::atomic<size_t> _writeIndex{0};
+    alignas(std::hardware_destructive_interference_size) std::atomic<size_t> _readIndex{0};
 
     uint32_t roundUpToNextPow2(uint32_t x)                                                                                                                                                         
     {
@@ -42,27 +47,32 @@ class LockFreeRingBufferSPSC
     explicit LockFreeRingBufferSPSC(size_t capacity)
     {
         if(capacity == 0) {
-            throw invalid_argument("Capacity can't be 0");
+            throw std::invalid_argument("Capacity can't be 0");
         } 
 
         _capacity = capacity;
         // We require capacity to be a power of two so that:
         // (index & mask_) == (index % capacity)
         // This allows extremely fast wrap‑around using bitwise AND.
-        if(_capacity & _capacity-1) != 0) 
+        if( (_capacity & (_capacity-1) ) != 0) 
         {
             //round up to next power of 2
-            //_capacity = roundUpToNextPow2(uint32_t x);
+            //_capacity = roundUpToNextPow2(_capacity);
             _capacity = bit_ceil(_capacity);
         } 
       
         _mask = _capacity - 1;
-        _buffer = new T[_capacity];
+        //_buffer = new T[_capacity];
+        _buffer = std::make_unique<T[]>(_capacity);
+
     }
 
+    /* not required for unique_ptr
     ~LockFreeRingBufferSPSC(){
         delete[] _buffer;
-    }
+    }*/
+    //Destructor not required for unique_ptr
+    //~LockFreeRingBufferSPSC() = default; // or remove entirely
 
     LockFreeRingBufferSPSC(const LockFreeRingBufferSPSC&) = delete;
     LockFreeRingBufferSPSC& operator=(const LockFreeRingBufferSPSC&) = delete;
@@ -72,11 +82,11 @@ class LockFreeRingBufferSPSC
     bool push(const T& data)
     {
         // Relaxed is safe because ONLY the producer thread writes to writeIndex_.
-        const size_t writeIndex = _writeIndex.load(std::memory_order_relaxed);
+        const std::size_t writeIndex = _writeIndex.load(std::memory_order_relaxed);
 
         // Compute the next write index with wrap‑around.
         // This is where the producer *would* write next.
-        const size_t nextWriteIndex = (writeIndex+1) & _mask;
+        const std::size_t nextWriteIndex = (writeIndex+1) & _mask;
 
         // FULL CONDITION:
         // We intentionally leave one slot unused so that:
@@ -89,7 +99,11 @@ class LockFreeRingBufferSPSC
         if(nextWriteIndex == _readIndex.load(std::memory_order_acquire)){
             return false; //Buffer is full
         }
-        // Safe because only the producer writes to this slot.
+        
+        //Moving from a const object is equivalent to copying.
+        //If we want true move semantics, add an overload:
+        //bool push(T&& data) with same implementation as push(const T& data) except _buffer[writeIndex] = std::move(data);
+        //_buffer[writeIndex] = std::move(data);  ==> Wrong here for push(const T& data)
         _buffer[writeIndex] = data;
         
         //Release ensures the _buffer write (anything above this line) happens‑before the consumer sees writeIndex_.
@@ -101,7 +115,7 @@ class LockFreeRingBufferSPSC
     bool pop(T& data)
     {
         // Relaxed is safe because ONLY the consumer thread writes to readIndex_.
-        const size_t readIndex = _readIndex.load(std::memory_order_relaxed);
+        const std::size_t readIndex = _readIndex.load(std::memory_order_relaxed);
 
         // EMPTY CONDITION:
         // If readIndex == writeIndex, there is no data to consume.
@@ -112,10 +126,11 @@ class LockFreeRingBufferSPSC
         }
 
         // Safe because only the consumer reads from this slot.
-        data = _buffer[readIndex];
+        //Can be moved as _buffer[readIndex] will not be read again and will be overwritten by push()
+        data = std::move(_buffer[readIndex]);
         
         // Compute the next read index with wrap‑around.
-        const size_t nextReadIndex = (readIndex+1) & _mask;
+        const std::size_t nextReadIndex = (readIndex+1) & _mask;
         
         // Release ensures the consumer's read is visible before the producer checks readIndex_.
         _readIndex.store(nextReadIndex, std::memory_order_release);
