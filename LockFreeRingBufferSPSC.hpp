@@ -5,6 +5,7 @@
 #include<new>
 #include<stdexcept> // for std::invalid_argument
 #include<cstddef> // for size_t
+#include<bit>  //For bit_ceil();
 
 using namespace std;
 
@@ -21,16 +22,23 @@ class LockFreeRingBufferSPSC
     alignas(std::hardware_destructive_interference_size) atomic<size_t> _readIndex{0};
 
   public:
-    explicit LockFreeRingBufferSPSC(size_t capacity):_capacity(capacity)
+    explicit LockFreeRingBufferSPSC(size_t capacity)
     {
+        if(capacity == 0) {
+            throw invalid_argument("Capacity can't be 0");
+        } 
+
+        _capacity = capacity;
         // We require capacity to be a power of two so that:
         // (index & mask_) == (index % capacity)
         // This allows extremely fast wrap‑around using bitwise AND.
-        if(capacity == 0 || (capacity & (capacity-1)) != 0) {
-            throw invalid_argument("Capacity must be a power of 2 and greater than 0");
-        }              
-        _mask = capacity - 1;
-        _buffer = new T[capacity];
+        if(_capacity & _capacity-1) != 0) {
+            //round up to next power of 2
+            _capacity = bit_ceil(_capacity);
+        } 
+      
+        _mask = _capacity - 1;
+        _buffer = new T[_capacity];
     }
 
     ~LockFreeRingBufferSPSC(){
