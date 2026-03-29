@@ -21,6 +21,23 @@ class LockFreeRingBufferSPSC
     alignas(std::hardware_destructive_interference_size) atomic<size_t> _writeIndex{0};
     alignas(std::hardware_destructive_interference_size) atomic<size_t> _readIndex{0};
 
+    uint32_t roundUpToNextPow2(uint32_t x)                                                                                                                                                         
+    {
+      if (x == 0) return 1;
+      
+      x--; //To handle if already power of 2, after shifting all bits ++x below make power of 2 [eg 31 to 32]
+      
+      //Fill all bits below the highest 1‑bit. E.g. 10010 (18) to 11111 (31)
+      x |= x >> 1;
+      x |= x >> 2;
+      x |= x >> 4;
+      x |= x >> 8;
+      x |= x >> 16;
+      x++; //Make .. 7 to 8 or 15 to 16 or 31 to 32.
+      return x;
+}
+
+
   public:
     explicit LockFreeRingBufferSPSC(size_t capacity)
     {
@@ -32,8 +49,10 @@ class LockFreeRingBufferSPSC
         // We require capacity to be a power of two so that:
         // (index & mask_) == (index % capacity)
         // This allows extremely fast wrap‑around using bitwise AND.
-        if(_capacity & _capacity-1) != 0) {
+        if(_capacity & _capacity-1) != 0) 
+        {
             //round up to next power of 2
+            //_capacity = roundUpToNextPow2(uint32_t x);
             _capacity = bit_ceil(_capacity);
         } 
       
