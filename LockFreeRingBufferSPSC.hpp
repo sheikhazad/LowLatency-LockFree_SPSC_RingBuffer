@@ -30,16 +30,20 @@ class LockFreeRingBufferSPSCQueue
     uint32_t roundUpToNextPow2(uint32_t x)                                                                                                                                                         
     {
       if (x == 0) return 1;
-      
+      //x = 18 = 10010
+      //x-- = 17 = 10001
       x--; //To handle if already power of 2, after shifting all bits ++x below make power of 2 [eg 31 to 32]
+           
       
       //Fill all bits below the highest 1‑bit. E.g. 10010 (18) to 11111 (31)
-      x |= x >> 1;
-      x |= x >> 2;
-      x |= x >> 4;
-      x |= x >> 8;
-      x |= x >> 16;
+      x |= x >> 1;  //11001
+      x |= x >> 2;  //11111
+      x |= x >> 4;  //11111
+      x |= x >> 8;  //11111
+      x |= x >> 16; //11111 = 31
+
       x++; //Make .. 7 to 8 or 15 to 16 or 31 to 32.
+      //x++ = 32
       return x;
 }
 
