@@ -32,7 +32,7 @@ class LockFreeRingBufferSPSCQueue
       if (x == 0) return 1;
       //x = 18 = 10010
       //x-- = 17 = 10001
-      x--; //To handle if already power of 2, after shifting all bits ++x below make power of 2 [eg 31 to 32]
+      x--; //If x is already a power of two, keep it unchanged after the final increment [eg 31 to 32]
            
       
       //Fill all bits below the highest 1‑bit. E.g. 10010 (18) to 11111 (31)
