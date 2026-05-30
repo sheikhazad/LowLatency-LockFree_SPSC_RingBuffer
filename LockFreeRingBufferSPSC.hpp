@@ -1,4 +1,4 @@
-//LockFreeRingBufferSPSC.hpp
+//LockFreeRingBufferSPSCQueue.hpp
 
 #pragma once
 #include<atomic>
@@ -14,7 +14,7 @@
 //using std::atomic;
 
 template<typename T>
-class LockFreeRingBufferSPSC
+class LockFreeRingBufferSPSCQueue
 {
 
   private:
@@ -45,7 +45,7 @@ class LockFreeRingBufferSPSC
 
 
   public:
-    explicit LockFreeRingBufferSPSC(size_t capacity)
+    explicit LockFreeRingBufferSPSCQueue(size_t capacity)
     {
         if(capacity == 0) {
             throw std::invalid_argument("Capacity can't be 0");
@@ -75,10 +75,10 @@ class LockFreeRingBufferSPSC
     //Destructor not required for unique_ptr
     //~LockFreeRingBufferSPSC() = default; // or remove entirely
 
-    LockFreeRingBufferSPSC(const LockFreeRingBufferSPSC&) = delete;
-    LockFreeRingBufferSPSC& operator=(const LockFreeRingBufferSPSC&) = delete;
-    LockFreeRingBufferSPSC(LockFreeRingBufferSPSC&&) = delete;
-    LockFreeRingBufferSPSC& operator=( LockFreeRingBufferSPSC&&) = delete;
+    LockFreeRingBufferSPSCQueue(const LockFreeRingBufferSPSCQueue&) = delete;
+    LockFreeRingBufferSPSCQueue& operator=(const LockFreeRingBufferSPSCQueue&) = delete;
+    LockFreeRingBufferSPSCQueue(LockFreeRingBufferSPSCQueue&&) = delete;
+    LockFreeRingBufferSPSCQueue& operator=(LockFreeRingBufferSPSCQueue&&) = delete;
 
     bool push(const T& data)
     {
