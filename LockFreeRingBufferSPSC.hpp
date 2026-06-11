@@ -67,6 +67,7 @@ class LockFreeRingBufferSPSCQueue
         } 
       
         _mask = _capacity - 1;
+        //Both below needs T()
         //_buffer = new T[_capacity];
         _buffer = std::make_unique<T[]>(_capacity);
 
@@ -109,7 +110,7 @@ class LockFreeRingBufferSPSCQueue
         //If we want true move semantics, add an overload:
         //bool push(T&& data) with same implementation as push(const T& data) except _buffer[writeIndex] = std::move(data);
         //_buffer[writeIndex] = std::move(data);  ==> Wrong here for push(const T& data)
-        _buffer[writeIndex] = data;
+        _buffer[writeIndex] = data; //Needs T::operator=(const T&) or or move assignment
         
         //Release ensures the _buffer write (anything above this line) happens‑before the consumer sees writeIndex_.
         _writeIndex.store(nextWriteIndex,std::memory_order_release);
