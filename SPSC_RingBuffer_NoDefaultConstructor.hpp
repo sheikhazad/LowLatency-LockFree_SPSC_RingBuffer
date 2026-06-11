@@ -181,15 +181,13 @@ public:
             return false; //Buffer is empty
         }
 
-        // OPTION 1:
-        // data = std::move(_buffer[readIndex]);
+        // Common for OPTION 1, 2 & 3:
+        data = std::move(_buffer[readIndex]);
 
         // OPTION 2:
-        // data = std::move(_buffer[readIndex]);
         // _buffer[readIndex].~T();
 
-        // OPTION 3 (ACTIVE)
-        data = std::move(_buffer[readIndex]);
+        // OPTION 3 (ACTIVE): 
         std::destroy_at(&_buffer[readIndex]);
 
         const std::size_t nextReadIndex = (readIndex + 1) & _mask;
