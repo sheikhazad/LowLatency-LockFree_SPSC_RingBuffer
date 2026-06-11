@@ -143,7 +143,7 @@ public:
         // OPTION 2:
         // new (&_buffer[writeIndex]) T(data);
 
-        // OPTION 3 (ACTIVE)
+        // OPTION 3 (ACTIVE) => Need copy constructor()
         std::construct_at(&_buffer[writeIndex], data);
 
         _writeIndex.store(nextWriteIndex, std::memory_order_release);
@@ -163,7 +163,7 @@ public:
 
         // OPTION 2:
         // new (&_buffer[writeIndex]) T(std::move(data));
-        // OPTION 3 (ACTIVE)
+        // OPTION 3 (ACTIVE) => Need move constructor()
         std::construct_at(&_buffer[writeIndex], std::move(data));
 
         _writeIndex.store(nextWriteIndex, std::memory_order_release);
