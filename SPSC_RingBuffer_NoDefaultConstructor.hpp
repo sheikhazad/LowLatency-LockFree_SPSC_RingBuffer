@@ -93,7 +93,9 @@ public:
         _mask = _capacity - 1;
 
         // OPTION 1:
-        // _buffer = std::make_unique<T[]>(_capacity);
+        //Both below needs T()
+        //_buffer = new T[_capacity]; => Raw without unique_ptr
+        //_buffer = std::make_unique<T[]>(_capacity);
 
         // OPTION 2 & 3:
         //std::align_val_t(alignof(T)) guarantees that the start address of the
