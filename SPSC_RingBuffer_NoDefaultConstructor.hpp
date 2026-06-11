@@ -96,8 +96,21 @@ public:
         // _buffer = std::make_unique<T[]>(_capacity);
 
         // OPTION 2 & 3:
-        _buffer = static_cast<T*>(::operator new(sizeof(T) * _capacity, std::align_val_t(alignof(T))));
-        
+        //std::align_val_t(alignof(T)) guarantees that the start address of the
+        //allocated memory block (_buffer) is properly aligned for objects of type T.
+        //It does NOT guarantee that every object stored in the buffer starts on a
+        //cache-line boundary.
+        //Individual objects are cache-line aligned only if T itself has cache-line
+        //alignment requirements, for example:
+        //struct alignas(64) T { ... };
+        //In that case alignof(T) == 64 and each element in the array will also be
+        //64-byte aligned   
+        buffer = static_cast<T*>(
+                  ::operator new(
+                  sizeof(T) * _capacity,
+                  std::align_val_t(alignof(T))
+                 )
+               );
     }
 
      //OPTION 2 & 3 (Option 1 does not need a custom destructor)
