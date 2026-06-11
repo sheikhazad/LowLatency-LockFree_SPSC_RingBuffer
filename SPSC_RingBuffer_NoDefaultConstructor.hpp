@@ -123,7 +123,7 @@ public:
     
 
     LockFreeRingBufferSPSCQueue(const LockFreeRingBufferSPSCQueue&) = delete;
-    LockFreeRingBufferSPSCQueue& operator=(const LockFreeRingBufferSPSCQueue&) = delete;
+    LockFreeRingBufferSPSCQueue& operator=(const LockFreeRingBufferSPSCQueue&) = delete; //q2 = q1; // ERROR
     LockFreeRingBufferSPSCQueue(LockFreeRingBufferSPSCQueue&&) = delete;
     LockFreeRingBufferSPSCQueue& operator=(LockFreeRingBufferSPSCQueue&&) = delete;
 
