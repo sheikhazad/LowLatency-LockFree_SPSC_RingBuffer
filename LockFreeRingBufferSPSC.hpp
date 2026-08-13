@@ -19,7 +19,7 @@ class LockFreeRingBufferSPSCQueue
 
   private:
     //T* _buffer;
-    std::unique_ptr<T[]> _buffer;
+    std::unique_ptr<T[]> _t_buffer;
     std::size_t _capacity;
     std::size_t _mask;
 
@@ -71,14 +71,14 @@ class LockFreeRingBufferSPSCQueue
       
         _mask = _capacity - 1;
         //Both below needs T()
-        //_buffer = new T[_capacity];
-        _buffer = std::make_unique<T[]>(_capacity);
+        //_t_buffer = new T[_capacity];
+        _t_buffer = std::make_unique<T[]>(_capacity);
 
     }
 
     /* not required for unique_ptr
     ~LockFreeRingBufferSPSC(){
-        delete[] _buffer;
+        delete[] _t_buffer;
     }*/
     //Destructor not required for unique_ptr
     //~LockFreeRingBufferSPSC() = default; // or remove entirely
@@ -112,10 +112,10 @@ class LockFreeRingBufferSPSCQueue
         //Moving from a const object is equivalent to copying.
         //If we want true move semantics, add an overload:
         //bool push(T&& data) with same implementation as push(const T& data) except _buffer[writeIndex] = std::move(data);
-        //_buffer[writeIndex] = std::move(data);  ==> Wrong here for push(const T& data)
-        _buffer[writeIndex] = data; //Needs T::operator=(const T&) or or move assignment
+        //_t_buffer[writeIndex] = std::move(data);  ==> Wrong here for push(const T& data)
+        _t_buffer[writeIndex] = data; //Needs T::operator=(const T&) or or move assignment
         
-        //Release ensures the _buffer write (anything above this line) happens‑before the consumer sees writeIndex_.
+        //Release ensures the _t_buffer write (anything above this line) happens‑before the consumer sees writeIndex_.
         _writeIndex.store(nextWriteIndex,std::memory_order_release);
 
         return true;
@@ -135,8 +135,8 @@ class LockFreeRingBufferSPSCQueue
         }
 
         // Safe because only the consumer reads from this slot.
-        //Can be moved as _buffer[readIndex] will not be read again and will be overwritten by push()
-        data = std::move(_buffer[readIndex]);
+        //Can be moved as _t_buffer[readIndex] will not be read again and will be overwritten by push()
+        data = std::move(_t_buffer[readIndex]);
         
         // Compute the next read index with wrap‑around.
         const std::size_t nextReadIndex = (readIndex+1) & _mask;
