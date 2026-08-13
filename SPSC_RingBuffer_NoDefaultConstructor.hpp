@@ -125,15 +125,15 @@ public:
         while (read != write)
         {
             // OPTION 2:
-            // _buffer[read].~T();
+            // _t_buffer[read].~T();
 
             // OPTION 3 (ACTIVE)
-            std::destroy_at(&_buffer[read]);
+            std::destroy_at(&_t_buffer[read]);
 
             read = (read + 1) & _mask;
         }
 
-        ::operator delete(_buffer, std::align_val_t(alignof(T)));
+        ::operator delete(_t_buffer, std::align_val_t(alignof(T)));
     }
     
 
@@ -154,13 +154,13 @@ public:
         }
 
         // OPTION 1:
-        // _buffer[writeIndex] = data;
+        // _t_buffer[writeIndex] = data;
 
         // OPTION 2:
-        // new (&_buffer[writeIndex]) T(data);
+        // new (&_t_buffer[writeIndex]) T(data);
 
         // OPTION 3 (ACTIVE) => Need copy constructor()
-        std::construct_at(&_buffer[writeIndex], data);
+        std::construct_at(&_t_buffer[writeIndex], data);
 
         _writeIndex.store(nextWriteIndex, std::memory_order_release);
 
@@ -178,9 +178,9 @@ public:
         }
 
         // OPTION 2:
-        // new (&_buffer[writeIndex]) T(std::move(data));
+        // new (&_t_buffer[writeIndex]) T(std::move(data));
         // OPTION 3 (ACTIVE) => Need move constructor()
-        std::construct_at(&_buffer[writeIndex], std::move(data));
+        std::construct_at(&_t_buffer[writeIndex], std::move(data));
 
         _writeIndex.store(nextWriteIndex, std::memory_order_release);
 
@@ -197,13 +197,13 @@ public:
         }
 
         // Common for OPTION 1, 2 & 3:
-        data = std::move(_buffer[readIndex]);
+        data = std::move(_t_buffer[readIndex]);
 
         // OPTION 2:
-        // _buffer[readIndex].~T();
+        // _t_buffer[readIndex].~T();
 
         // OPTION 3 (ACTIVE): 
-        std::destroy_at(&_buffer[readIndex]);
+        std::destroy_at(&_t_buffer[readIndex]);
 
         const std::size_t nextReadIndex = (readIndex + 1) & _mask;
         _readIndex.store(nextReadIndex, std::memory_order_release);
