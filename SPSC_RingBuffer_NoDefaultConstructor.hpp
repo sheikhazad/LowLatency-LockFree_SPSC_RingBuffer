@@ -28,9 +28,9 @@ private:
     /*
      * OPTION 1 (Original implementation)
      *
-     * std::unique_ptr<T[]> _buffer;
+     * std::unique_ptr<T[]> _t_buffer;
      *
-     * _buffer = std::make_unique<T[]>(_capacity);
+     * _t_buffer = std::make_unique<T[]>(_capacity);
      *
      * Pros:
      *  - Simple
@@ -43,10 +43,10 @@ private:
     /*
      * OPTION 2 (Placement-new implementation)
      *
-     * T* _buffer;
+     * T* _t_buffer;
      *
-     * new (&_buffer[idx]) T(value);
-     * _buffer[idx].~T();
+     * new (&_t_buffer[idx]) T(value);
+     * _t_buffer[idx].~T();
      *
      * Pros:
      *  - Supports non-default-constructible types
@@ -63,7 +63,7 @@ private:
      * std::destroy_at()
      */
 
-    T* _buffer{nullptr};
+    T* _t_buffer{nullptr};
 
     std::size_t _capacity{};
     std::size_t _mask{};
@@ -94,8 +94,8 @@ public:
 
         // OPTION 1:
         //Both below needs T()
-        //_buffer = new T[_capacity]; => Raw without unique_ptr
-        //_buffer = std::make_unique<T[]>(_capacity);
+        //_t_buffer = new T[_capacity]; => Raw without unique_ptr
+        //_t_buffer = std::make_unique<T[]>(_capacity);
 
         // OPTION 2 & 3:
         //std::align_val_t(alignof(T)) guarantees that the start address of the
@@ -107,7 +107,7 @@ public:
         //struct alignas(64) T { ... };
         //In that case alignof(T) == 64 and each element in the array will also be
         //64-byte aligned   
-        buffer = static_cast<T*>(
+        _t_buffer = static_cast<T*>(
                   ::operator new(
                   sizeof(T) * _capacity,
                   std::align_val_t(alignof(T))
