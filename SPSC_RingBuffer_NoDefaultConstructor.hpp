@@ -107,12 +107,10 @@ public:
         //struct alignas(64) T { ... };
         //In that case alignof(T) == 64 and each element in the array will also be
         //64-byte aligned   
-        _t_buffer = static_cast<T*>(
-                  ::operator new(
-                  sizeof(T) * _capacity,
-                  std::align_val_t(alignof(T))
-                 )
-               );
+
+         //Give me at least 'size' bytes whose starting address is aligned to 8 bytes(say alignof(T) = 8).
+        _t_buffer = static_cast<T*>(::operator new(sizeof(T) * _capacity,
+                                    std::align_val_t(alignof(T)) ) );
     }
 
      //OPTION 2 & 3 (Option 1 does not need a custom destructor)
