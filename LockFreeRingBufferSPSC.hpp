@@ -23,8 +23,11 @@ class LockFreeRingBufferSPSCQueue
     std::size_t _capacity;
     std::size_t _mask;
 
-    alignas(std::hardware_destructive_interference_size) std::atomic<size_t> _writeIndex{0};
-    alignas(std::hardware_destructive_interference_size) std::atomic<size_t> _readIndex{0};
+    alignas(std::hardware_destructive_interference_size) 
+    std::atomic<size_t> _writeIndex{0};
+
+    alignas(std::hardware_destructive_interference_size) 
+    std::atomic<size_t> _readIndex{0};
 
     //My own bit_ceil()                                                                                    
     uint32_t roundUpToNextPow2(uint32_t x)                                                                                                                                                         
